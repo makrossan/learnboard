@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+{% block title %}Importar CSV - LearnBoard{% endblock %}
+{% block content %}
+<div class="breadcrumb">
+  <a href="{{ url_for('index') }}">LearnBoard</a> / <a href="{{ url_for('view_book', id=sheet.chapter.book.id) }}">{{ sheet.chapter.book.name }}</a> / <a href="{{ url_for('view_chapter', id=sheet.chapter.id) }}">{{ sheet.chapter.name }}</a> / <a href="{{ url_for('view_sheet', id=sheet.id) }}">{{ sheet.name }}</a> / Importar CSV
+</div>
+
+<header class="page-header">
+  <div class="page-title">
+    <h1>📄 Importar CSV</h1>
+    <p>Importa contenido masivo a "{{ sheet.name }}"</p>
+  </div>
+</header>
+
+<div class="card" style="max-width: 800px;">
+  <form method="POST" enctype="multipart/form-data">
+    <div class="form-group">
+      <label for="csv_file">Archivo CSV</label>
+      <input type="file" id="csv_file" name="csv_file" class="form-control" accept=".csv">
+    </div>
+    
+    <p style="text-align: center; color: var(--text-soft);">- o -</p>
+    
+    <div class="form-group">
+      <label for="csv_text">Pegar contenido CSV</label>
+      <textarea id="csv_text" name="csv_text" class="form-control" style="min-height: 200px; font-family: monospace;" placeholder="level,section_order,box_number,box_title,task_order,task_text
+Nivel Básico,1,1,Grupo A,1,Ejecutar ls -la
+..."></textarea>
+    </div>
+    
+    <div class="actions-row">
+      <button type="submit" class="btn btn-primary">Importar</button>
+      <a href="{{ url_for('view_sheet', id=sheet.id) }}" class="btn btn-secondary">Cancelar</a>
+    </div>
+  </form>
+</div>
+
+<div class="card" style="max-width: 800px; margin-top: 1rem;">
+  <h3 class="card-title">Formato del CSV</h3>
+  <p class="card-desc">El CSV debe tener las siguientes columnas:</p>
+  <ul style="color: var(--text-muted); font-size: 0.9rem;">
+    <li><code>level</code> - Nivel Básico / Intermedio / Avanzado / Experto / Reto Final</li>
+    <li><code>section_order</code> - Orden de la sección (1-5)</li>
+    <li><code>box_number</code> - Número del box (1-25)</li>
+    <li><code>box_title</code> - Título mostrado en el box</li>
+    <li><code>task_order</code> - Orden de la tarea dentro del box</li>
+    <li><code>task_text</code> - Texto de la tarea</li>
+  </ul>
+  <p class="card-desc" style="margin-top: 1rem;">Ejemplo:</p>
+  <pre style="background: #0a0c10; padding: 1rem; border-radius: var(--radius-md); overflow-x: auto; font-size: 0.8rem;">level,section_order,box_number,box_title,task_order,task_text
+Nivel Básico,1,1,Conexión básica,1,Conecte al servidor usando ssh user@host
+Nivel Básico,1,1,Conexión básica,2,Ejecute comando remoto
+Nivel Básico,1,2,Host keys,1,Revise archivo ~/.ssh/known_hosts</pre>
+</div>
+{% endblock %}

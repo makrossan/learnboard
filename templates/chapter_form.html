@@ -1,0 +1,34 @@
+{% extends 'base.html' %}
+{% block title %}{{ 'Editar' if chapter else 'Nuevo' }} Capítulo - LearnBoard{% endblock %}
+{% block content %}
+<div class="breadcrumb">
+  <a href="{{ url_for('index') }}">LearnBoard</a> / <a href="{{ url_for('view_book', id=book.id) }}">{{ book.name }}</a> / {{ 'Editar' if chapter else 'Nuevo' }} Capítulo
+</div>
+
+<header class="page-header">
+  <div class="page-title">
+    <h1>{{ 'Editar' if chapter else 'Nuevo' }} Capítulo</h1>
+  </div>
+</header>
+
+<div class="card" style="max-width: 600px;">
+  <form method="POST">
+    <div class="form-group">
+      <label for="name">Nombre *</label>
+      <input type="text" id="name" name="name" class="form-control" value="{{ chapter.name if chapter else '' }}" required>
+    </div>
+    <div class="form-group">
+      <label for="order">Orden</label>
+      <input type="number" id="order" name="order" class="form-control" value="{{ next_order }}" min="1">
+    </div>
+    <div class="form-group">
+      <label for="description">Descripción</label>
+      <textarea id="description" name="description" class="form-control">{{ chapter.description if chapter else '' }}</textarea>
+    </div>
+    <div class="actions-row">
+      <button type="submit" class="btn btn-primary">Guardar</button>
+      <a href="{{ url_for('view_book', id=book.id) }}" class="btn btn-secondary">Cancelar</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

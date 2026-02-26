@@ -1,0 +1,320 @@
+{% extends 'base.html' %}
+{% block title %}{{ sheet.name }} - LearnBoard{% endblock %}
+{% block content %}
+<div class="breadcrumb">
+  <a href="{{ url_for('index') }}">LearnBoard</a> / 
+  <a href="{{ url_for('view_book', id=sheet.chapter.book.id) }}">{{ sheet.chapter.book.name }}</a> / 
+  <a href="{{ url_for('view_chapter', id=sheet.chapter.id) }}">{{ sheet.chapter.name }}</a> / 
+  {{ sheet.name }}
+</div>
+
+<header class="page-header">
+  <div class="page-title">
+    <h1>📝 {{ sheet.name }}</h1>
+  </div>
+  <div>
+    <a href="{{ url_for('edit_sheet', id=sheet.id) }}" class="btn btn-secondary">Editar Hoja</a>
+    <a href="{{ url_for('import_csv', sheet_id=sheet.id) }}" class="btn btn-secondary">📄 Importar CSV</a>
+    <button onclick="toggleEditMode()" class="btn btn-secondary" id="editModeBtn">✏️ Modo Edición</button>
+  </div>
+</header>
+
+<div class="global-progress-wrapper">
+  <div class="progress-container">
+    <div id="global-bar" class="progress-bar" style="width: {{ global_progress.percent }}%;"></div>
+  </div>
+  <div id="global-label" class="global-progress-label">
+    Progreso total: {{ global_progress.completed }}/{{ global_progress.total }} ({{ global_progress.percent }}%)
+  </div>
+</div>
+
+<!-- Add Section Form (hidden by default) -->
+<div id="addSectionForm" class="card" style="display: none; max-width: 600px; margin-bottom: 1.5rem;">
+  <form method="POST" action="{{ url_for('new_section', sheet_id=sheet.id) }}" class="inline-form">
+    <input type="text" name="level_name" class="form-control" placeholder="Nombre del nivel (ej: Nivel Básico)" required>
+    <button type="submit" class="btn btn-primary">Agregar Sección</button>
+  </form>
+</div>
+
+{% for section in sections %}
+<section class="section {{ 'completed' if section_progress[section.id].percent == 100 else '' }}" data-section="{{ section.id }}">
+  <div class="section-header">
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+      <h2>{{ section.level_name }}</h2>
+      <div class="edit-controls" style="display: none;">
+        <button onclick="editSection({{ section.id }}, '{{ section.level_name }}')" class="btn btn-sm btn-secondary">Editar</button>
+        <form method="POST" action="{{ url_for('delete_section', id=section.id) }}" style="display:inline;" onsubmit="return confirm('¿Eliminar esta sección?');">
+          <button type="submit" class="btn btn-sm btn-danger">Eliminar</button>
+        </form>
+      </div>
+    </div>
+    <div class="progress-container">
+      <div class="progress-bar section-progress" data-section="{{ section.id }}" style="width: {{ section_progress[section.id].percent }}%;"></div>
+    </div>
+    <span class="section-progress-label" data-section="{{ section.id }}" style="font-size: 0.75rem; color: var(--text-soft);">
+      {{ section_progress[section.id].completed }}/{{ section_progress[section.id].total }} completadas
+    </span>
+  </div>
+  
+  <div class="section-body">
+    <div class="grid">
+      {% for box in section.boxes|sort(attribute='box_number') %}
+      <div class="box" data-box="{{ box.id }}">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+          <div class="box-title">{{ box.box_title }}</div>
+          <div class="edit-controls" style="display: none;">
+            <button onclick="editBox({{ box.id }}, '{{ box.box_title }}')" class="btn btn-sm btn-secondary" style="padding: 0.2rem 0.5rem; font-size: 0.7rem;">✏️</button>
+            <form method="POST" action="{{ url_for('delete_box', id=box.id) }}" style="display:inline;" onsubmit="return confirm('¿Eliminar este box?');">
+              <button type="submit" class="btn btn-sm btn-danger" style="padding: 0.2rem 0.5rem; font-size: 0.7rem;">🗑️</button>
+            </form>
+          </div>
+        </div>
+        <ul class="cmd-list">
+          {% for task in box.tasks|sort(attribute='task_order') %}
+          <li data-task="{{ task.id }}">
+            <label>
+              <input type="checkbox" data-task-id="{{ task.id }}" {{ 'checked' if task.progress and task.progress.completed else '' }}>
+              <span>{{ task.task_text }}</span>
+            </label>
+            <div class="edit-controls task-edit" style="display: none;">
+              <button onclick="editTask({{ task.id }}, `{{ task.task_text|replace('`', '\\`') }}`)" class="btn btn-sm btn-secondary" style="padding: 0.1rem 0.3rem; font-size: 0.65rem;">✏️</button>
+              <form method="POST" action="{{ url_for('delete_task', id=task.id) }}" style="display:inline;" onsubmit="return confirm('¿Eliminar esta tarea?');">
+                <button type="submit" class="btn btn-sm btn-danger" style="padding: 0.1rem 0.3rem; font-size: 0.65rem;">🗑️</button>
+              </form>
+            </div>
+          </li>
+          {% endfor %}
+        </ul>
+        <div class="add-task-form edit-controls" style="display: none; margin-top: 0.5rem;">
+          <form method="POST" action="{{ url_for('new_task', box_id=box.id) }}" class="inline-form">
+            <input type="text" name="task_text" class="form-control" style="padding: 0.3rem 0.5rem; font-size: 0.8rem;" placeholder="Nueva tarea" required>
+            <button type="submit" class="btn btn-sm btn-primary">+</button>
+          </form>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    
+    <!-- Add Box Form -->
+    <div class="add-box-form edit-controls" style="display: none; margin-top: 1rem;">
+      <form method="POST" action="{{ url_for('new_box', section_id=section.id) }}" class="inline-form">
+        <input type="text" name="box_title" class="form-control" placeholder="Título del nuevo box" required>
+        <button type="submit" class="btn btn-primary">Agregar Box</button>
+      </form>
+    </div>
+    
+    <!-- Notes Section -->
+    <div style="margin-top: 1.5rem; border-top: 1px solid var(--border-subtle); padding-top: 1rem;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+        <h4 style="margin: 0; color: var(--text-muted); font-size: 0.9rem;">📝 Notas</h4>
+        <button onclick="showNoteForm({{ section.id }})" class="btn btn-sm btn-secondary">+ Nota</button>
+      </div>
+      
+      {% for note in section.notes %}
+      <div class="note-content" data-note="{{ note.id }}">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+          <div style="flex: 1;">{{ note.content_markdown|markdown|safe }}</div>
+          <div style="margin-left: 0.5rem;">
+            <button onclick="editNote({{ note.id }}, `{{ note.content_markdown|replace('`', '\\`')|replace('\n', '\\n') }}`)" class="btn btn-sm btn-secondary" style="padding: 0.2rem 0.5rem;">✏️</button>
+            <form method="POST" action="{{ url_for('delete_note', id=note.id) }}" style="display:inline;" onsubmit="return confirm('¿Eliminar esta nota?');">
+              <button type="submit" class="btn btn-sm btn-danger" style="padding: 0.2rem 0.5rem;">🗑️</button>
+            </form>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endfor %}
+
+{% if not sections %}
+<div class="empty-state">
+  <h3>No hay secciones</h3>
+  <p>Activa el modo edición para agregar secciones, o importa un CSV</p>
+</div>
+{% endif %}
+
+<!-- Modals -->
+<div id="sectionModal" class="modal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3>Editar Sección</h3>
+      <button class="modal-close" onclick="closeModal('sectionModal')">&times;</button>
+    </div>
+    <form method="POST" id="sectionForm">
+      <div class="form-group">
+        <label>Nombre del nivel</label>
+        <input type="text" name="level_name" id="sectionLevelName" class="form-control" required>
+      </div>
+      <button type="submit" class="btn btn-primary">Guardar</button>
+    </form>
+  </div>
+</div>
+
+<div id="boxModal" class="modal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3>Editar Box</h3>
+      <button class="modal-close" onclick="closeModal('boxModal')">&times;</button>
+    </div>
+    <form method="POST" id="boxForm">
+      <div class="form-group">
+        <label>Título del box</label>
+        <input type="text" name="box_title" id="boxTitle" class="form-control" required>
+      </div>
+      <button type="submit" class="btn btn-primary">Guardar</button>
+    </form>
+  </div>
+</div>
+
+<div id="taskModal" class="modal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3>Editar Tarea</h3>
+      <button class="modal-close" onclick="closeModal('taskModal')">&times;</button>
+    </div>
+    <form method="POST" id="taskForm">
+      <div class="form-group">
+        <label>Texto de la tarea</label>
+        <input type="text" name="task_text" id="taskText" class="form-control" required>
+      </div>
+      <button type="submit" class="btn btn-primary">Guardar</button>
+    </form>
+  </div>
+</div>
+
+<div id="noteModal" class="modal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3 id="noteModalTitle">Nueva Nota</h3>
+      <button class="modal-close" onclick="closeModal('noteModal')">&times;</button>
+    </div>
+    <form method="POST" id="noteForm">
+      <div class="form-group">
+        <label>Contenido (Markdown)</label>
+        <textarea name="content_markdown" id="noteContent" class="form-control" style="min-height: 150px;"></textarea>
+      </div>
+      <button type="submit" class="btn btn-primary">Guardar</button>
+    </form>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+let editMode = false;
+
+function toggleEditMode() {
+  editMode = !editMode;
+  const btn = document.getElementById('editModeBtn');
+  const addSection = document.getElementById('addSectionForm');
+  const controls = document.querySelectorAll('.edit-controls');
+  
+  if (editMode) {
+    btn.textContent = '✅ Modo Normal';
+    btn.classList.remove('btn-secondary');
+    btn.classList.add('btn-primary');
+    addSection.style.display = 'block';
+    controls.forEach(c => c.style.display = 'flex');
+  } else {
+    btn.textContent = '✏️ Modo Edición';
+    btn.classList.remove('btn-primary');
+    btn.classList.add('btn-secondary');
+    addSection.style.display = 'none';
+    controls.forEach(c => c.style.display = 'none');
+  }
+}
+
+// Checkbox toggle with AJAX
+document.querySelectorAll('input[type="checkbox"][data-task-id]').forEach(cb => {
+  cb.addEventListener('change', async function() {
+    const taskId = this.dataset.taskId;
+    try {
+      const response = await fetch(`/api/task/${taskId}/toggle`, { method: 'POST' });
+      const data = await response.json();
+      
+      if (data.success) {
+        // Update section progress bars
+        for (const [sectionId, progress] of Object.entries(data.section_progress)) {
+          const sectionBar = document.querySelector(`.section-progress[data-section="${sectionId}"]`);
+          const sectionLabel = document.querySelector(`.section-progress-label[data-section="${sectionId}"]`);
+          if (sectionBar) sectionBar.style.width = progress.percent + '%';
+          if (sectionLabel) sectionLabel.textContent = `${progress.completed}/${progress.total} completadas`;
+          
+          // Update section completed class
+          const section = document.querySelector(`section[data-section="${sectionId}"]`);
+          if (section) {
+            if (progress.percent === 100) {
+              section.classList.add('completed');
+            } else {
+              section.classList.remove('completed');
+            }
+          }
+        }
+        
+        // Update global progress
+        const globalBar = document.getElementById('global-bar');
+        const globalLabel = document.getElementById('global-label');
+        if (globalBar) globalBar.style.width = data.global_progress.percent + '%';
+        if (globalLabel) globalLabel.textContent = `Progreso total: ${data.global_progress.completed}/${data.global_progress.total} (${data.global_progress.percent}%)`;
+      }
+    } catch (err) {
+      console.error('Error toggling task:', err);
+    }
+  });
+});
+
+// Modal functions
+function closeModal(id) {
+  document.getElementById(id).classList.remove('active');
+}
+
+function editSection(id, name) {
+  document.getElementById('sectionLevelName').value = name;
+  document.getElementById('sectionForm').action = `/section/${id}/edit`;
+  document.getElementById('sectionModal').classList.add('active');
+}
+
+function editBox(id, title) {
+  document.getElementById('boxTitle').value = title;
+  document.getElementById('boxForm').action = `/box/${id}/edit`;
+  document.getElementById('boxModal').classList.add('active');
+}
+
+function editTask(id, text) {
+  document.getElementById('taskText').value = text;
+  document.getElementById('taskForm').action = `/task/${id}/edit`;
+  document.getElementById('taskModal').classList.add('active');
+}
+
+function showNoteForm(sectionId) {
+  document.getElementById('noteModalTitle').textContent = 'Nueva Nota';
+  document.getElementById('noteContent').value = '';
+  document.getElementById('noteForm').action = `/section/${sectionId}/note/new`;
+  document.getElementById('noteModal').classList.add('active');
+}
+
+function editNote(id, content) {
+  document.getElementById('noteModalTitle').textContent = 'Editar Nota';
+  document.getElementById('noteContent').value = content.replace(/\\n/g, '\n');
+  document.getElementById('noteForm').action = `/note/${id}/edit`;
+  document.getElementById('noteModal').classList.add('active');
+}
+
+// Close modals on outside click
+document.querySelectorAll('.modal').forEach(modal => {
+  modal.addEventListener('click', function(e) {
+    if (e.target === this) closeModal(this.id);
+  });
+});
+
+// Close modals on escape
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') {
+    document.querySelectorAll('.modal.active').forEach(m => m.classList.remove('active'));
+  }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+{% block title %}{{ chapter.name }} - LearnBoard{% endblock %}
+{% block content %}
+<div class="breadcrumb">
+  <a href="{{ url_for('index') }}">LearnBoard</a> / <a href="{{ url_for('view_book', id=chapter.book.id) }}">{{ chapter.book.name }}</a> / {{ chapter.name }}
+</div>
+
+<header class="page-header">
+  <div class="page-title">
+    <h1>📑 {{ chapter.name }}</h1>
+    {% if chapter.description %}
+      <p>{{ chapter.description }}</p>
+    {% endif %}
+  </div>
+  <div>
+    <a href="{{ url_for('edit_chapter', id=chapter.id) }}" class="btn btn-secondary">Editar Capítulo</a>
+    <a href="{{ url_for('new_sheet', chapter_id=chapter.id) }}" class="btn btn-primary">+ Nueva Hoja</a>
+  </div>
+</header>
+
+{% if sheets %}
+  <div class="grid-2">
+    {% for sheet in sheets %}
+      <div class="card">
+        <h3 class="card-title"><a href="{{ url_for('view_sheet', id=sheet.id) }}">{{ sheet.order }}. {{ sheet.name }}</a></h3>
+        <p class="card-desc">{{ sheet.sections|length }} sección(es)</p>
+        <div class="actions-row">
+          <a href="{{ url_for('view_sheet', id=sheet.id) }}" class="btn btn-sm btn-secondary">Abrir</a>
+          <a href="{{ url_for('edit_sheet', id=sheet.id) }}" class="btn btn-sm btn-secondary">Editar</a>
+          <a href="{{ url_for('import_csv', sheet_id=sheet.id) }}" class="btn btn-sm btn-secondary">📄 Importar CSV</a>
+          <form method="POST" action="{{ url_for('delete_sheet', id=sheet.id) }}" style="display:inline;" onsubmit="return confirm('¿Eliminar esta hoja?');">
+            <button type="submit" class="btn btn-sm btn-danger">Eliminar</button>
+          </form>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+{% else %}
+  <div class="empty-state">
+    <h3>No hay hojas de práctica</h3>
+    <p>Crea una hoja para comenzar a agregar secciones y tareas</p>
+  </div>
+{% endif %}
+{% endblock %}

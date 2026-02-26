@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+{% block title %}LearnBoard - Dashboard{% endblock %}
+{% block content %}
+<header class="page-header">
+  <div class="page-title">
+    <h1>📚 LearnBoard</h1>
+    <p>Tu panel de prácticas de estudio</p>
+  </div>
+  <div>
+    <a href="{{ url_for('list_categories') }}" class="btn btn-secondary">📁 Categorías</a>
+    <a href="{{ url_for('new_book') }}" class="btn btn-primary">+ Nuevo Libro</a>
+  </div>
+</header>
+
+{% if categories %}
+  {% for category in categories %}
+    {% if category.books %}
+      <div class="category-header">{{ category.name }}</div>
+      <div class="grid-2">
+        {% for book in category.books %}
+          <div class="card">
+            <h3 class="card-title"><a href="{{ url_for('view_book', id=book.id) }}">{{ book.name }}</a></h3>
+            {% if book.description %}
+              <p class="card-desc">{{ book.description }}</p>
+            {% endif %}
+            <div class="actions-row">
+              <a href="{{ url_for('view_book', id=book.id) }}" class="btn btn-sm btn-secondary">Abrir</a>
+              <a href="{{ url_for('edit_book', id=book.id) }}" class="btn btn-sm btn-secondary">Editar</a>
+              <form method="POST" action="{{ url_for('delete_book', id=book.id) }}" style="display:inline;" onsubmit="return confirm('¿Eliminar este libro?');">
+                <button type="submit" class="btn btn-sm btn-danger">Eliminar</button>
+              </form>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endfor %}
+{% else %}
+  <div class="empty-state">
+    <h3>No hay libros todavía</h3>
+    <p>Crea una categoría y luego agrega libros para comenzar</p>
+    <a href="{{ url_for('list_categories') }}" class="btn btn-primary" style="margin-top: 1rem;">Gestionar Categorías</a>
+  </div>
+{% endif %}
+{% endblock %}

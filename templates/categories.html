@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+{% block title %}Categorías - LearnBoard{% endblock %}
+{% block content %}
+<div class="breadcrumb">
+  <a href="{{ url_for('index') }}">LearnBoard</a> / Categorías
+</div>
+
+<header class="page-header">
+  <div class="page-title">
+    <h1>📁 Categorías</h1>
+  </div>
+  <a href="{{ url_for('new_category') }}" class="btn btn-primary">+ Nueva Categoría</a>
+</header>
+
+{% if categories %}
+  <div class="grid-2">
+    {% for cat in categories %}
+      <div class="card">
+        <h3 class="card-title">{{ cat.name }}</h3>
+        {% if cat.description %}
+          <p class="card-desc">{{ cat.description }}</p>
+        {% endif %}
+        <p class="card-desc">{{ cat.books|length }} libro(s)</p>
+        <div class="actions-row">
+          <a href="{{ url_for('edit_category', id=cat.id) }}" class="btn btn-sm btn-secondary">Editar</a>
+          <form method="POST" action="{{ url_for('delete_category', id=cat.id) }}" style="display:inline;" onsubmit="return confirm('¿Eliminar esta categoría y todos sus libros?');">
+            <button type="submit" class="btn btn-sm btn-danger">Eliminar</button>
+          </form>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+{% else %}
+  <div class="empty-state">
+    <h3>No hay categorías</h3>
+    <p>Crea una categoría para organizar tus libros</p>
+  </div>
+{% endif %}
+{% endblock %}

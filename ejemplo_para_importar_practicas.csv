@@ -1,0 +1,53 @@
+level,section_order,box_number,box_title,task_order,task_text
+Nivel Básico,1,1,Conexión básica y opciones esenciales,1,Conecte al servidor usando ssh user@host con hostname
+Nivel Básico,1,1,Conexión básica y opciones esenciales,2,Conecte usando dirección IPv4 con ssh user@IP
+Nivel Básico,1,1,Conexión básica y opciones esenciales,3,Conecte especificando puerto con ssh -p 22 user@host
+Nivel Básico,1,1,Conexión básica y opciones esenciales,4,Conecte en modo verbose con ssh -v user@host
+Nivel Básico,1,1,Conexión básica y opciones esenciales,5,Ejecute comando remoto con ssh user@host 'hostnamectl'
+Nivel Básico,1,2,Host keys y verificación,1,Revise archivo ~/.ssh/known_hosts
+Nivel Básico,1,2,Host keys y verificación,2,Use ssh-keyscan -H host y compare fingerprint
+Nivel Básico,1,2,Host keys y verificación,3,Elimine entrada con ssh-keygen -R host
+Nivel Básico,1,2,Host keys y verificación,4,Conecte usando StrictHostKeyChecking=no
+Nivel Básico,1,2,Host keys y verificación,5,Repita 5 conexiones verificando comportamiento
+
+Nivel Intermedio,2,1,Autenticación por llave,1,Genere llave con ssh-keygen -t ed25519 -a 64
+Nivel Intermedio,2,1,Autenticación por llave,2,Copie llave al servidor con ssh-copy-id user@host
+Nivel Intermedio,2,1,Autenticación por llave,3,Conecte usando autenticación por llave
+Nivel Intermedio,2,1,Autenticación por llave,4,Ajuste permisos chmod 700 ~/.ssh
+Nivel Intermedio,2,1,Autenticación por llave,5,Valide authorized_keys en servidor
+Nivel Intermedio,2,2,SSH Config y transferencias,1,Configure alias en ~/.ssh/config
+Nivel Intermedio,2,2,SSH Config y transferencias,2,Conecte usando ssh alias
+Nivel Intermedio,2,2,SSH Config y transferencias,3,Copie archivo con scp file user@host:/tmp/
+Nivel Intermedio,2,2,SSH Config y transferencias,4,Copie archivo remoto con scp user@host:/etc/hosts .
+Nivel Intermedio,2,2,SSH Config y transferencias,5,Use sftp para subir y bajar archivos
+
+Nivel Avanzado,3,1,Hardening SSHD,1,Verifique estado con systemctl status sshd
+Nivel Avanzado,3,1,Hardening SSHD,2,Cambie puerto en /etc/ssh/sshd_config
+Nivel Avanzado,3,1,Hardening SSHD,3,Valide configuración con sshd -t
+Nivel Avanzado,3,1,Hardening SSHD,4,Reinicie servicio con systemctl restart sshd
+Nivel Avanzado,3,1,Hardening SSHD,5,Deshabilite PasswordAuthentication y valide acceso por llave
+Nivel Avanzado,3,2,Diagnóstico y Logs,1,Use ssh -vvv para analizar autenticación
+Nivel Avanzado,3,2,Diagnóstico y Logs,2,Revise logs con journalctl -u sshd
+Nivel Avanzado,3,2,Diagnóstico y Logs,3,Valide puerto abierto con ss -tulpn | grep ssh
+Nivel Avanzado,3,2,Diagnóstico y Logs,4,Use nc -vz host 22 para probar conectividad
+Nivel Avanzado,3,2,Diagnóstico y Logs,5,Ajuste firewall-cmd para permitir puerto SSH
+
+Nivel Experto,4,1,Port Forwarding y JumpHost,1,Cree túnel local con ssh -L 8080:127.0.0.1:80 user@host
+Nivel Experto,4,1,Port Forwarding y JumpHost,2,Valide túnel con curl http://127.0.0.1:8080
+Nivel Experto,4,1,Port Forwarding y JumpHost,3,Use ssh -J user@jump user@target
+Nivel Experto,4,1,Port Forwarding y JumpHost,4,Use ssh -N para túneles sin shell
+Nivel Experto,4,1,Port Forwarding y JumpHost,5,Repita 5 túneles con puertos distintos
+Nivel Experto,4,2,Multiplexing SSH,1,Configure ControlMaster en ~/.ssh/config
+Nivel Experto,4,2,Multiplexing SSH,2,Configure ControlPersist 10m
+Nivel Experto,4,2,Multiplexing SSH,3,Ejecute 10 comandos reutilizando conexión
+Nivel Experto,4,2,Multiplexing SSH,4,Verifique estado con ssh -O check host
+Nivel Experto,4,2,Multiplexing SSH,5,Cierre sesión multiplexada con ssh -O exit host
+
+Reto Final,5,1,Escenario Endurecimiento Completo,1,Configure acceso por llave para usuario nuevo
+Reto Final,5,1,Escenario Endurecimiento Completo,2,Cambie puerto SSH y ajuste firewall
+Reto Final,5,1,Escenario Endurecimiento Completo,3,Deshabilite autenticación por password
+Reto Final,5,1,Escenario Endurecimiento Completo,4,Valide sintaxis con sshd -t antes de reiniciar
+Reto Final,5,2,Troubleshooting Integral,1,Provoque fallo de host key y repárelo
+Reto Final,5,2,Troubleshooting Integral,2,Provoque fallo de permisos y corríjalo
+Reto Final,5,2,Troubleshooting Integral,3,Diagnostique fallo de puerto con nc y ss
+Reto Final,5,2,Troubleshooting Integral,4,Implemente túnel local funcional y valide

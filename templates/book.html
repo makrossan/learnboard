@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+{% block title %}{{ book.name }} - LearnBoard{% endblock %}
+{% block content %}
+<div class="breadcrumb">
+  <a href="{{ url_for('index') }}">LearnBoard</a> / {{ book.name }}
+</div>
+
+<header class="page-header">
+  <div class="page-title">
+    <h1>📖 {{ book.name }}</h1>
+    {% if book.description %}
+      <p>{{ book.description }}</p>
+    {% endif %}
+  </div>
+  <div>
+    <a href="{{ url_for('edit_book', id=book.id) }}" class="btn btn-secondary">Editar Libro</a>
+    <a href="{{ url_for('new_chapter', book_id=book.id) }}" class="btn btn-primary">+ Nuevo Capítulo</a>
+  </div>
+</header>
+
+{% if chapters %}
+  <div class="grid-2">
+    {% for chapter in chapters %}
+      <div class="card">
+        <h3 class="card-title"><a href="{{ url_for('view_chapter', id=chapter.id) }}">{{ chapter.order }}. {{ chapter.name }}</a></h3>
+        {% if chapter.description %}
+          <p class="card-desc">{{ chapter.description }}</p>
+        {% endif %}
+        <p class="card-desc">{{ chapter.sheets|length }} hoja(s) de práctica</p>
+        <div class="actions-row">
+          <a href="{{ url_for('view_chapter', id=chapter.id) }}" class="btn btn-sm btn-secondary">Abrir</a>
+          <a href="{{ url_for('edit_chapter', id=chapter.id) }}" class="btn btn-sm btn-secondary">Editar</a>
+          <form method="POST" action="{{ url_for('delete_chapter', id=chapter.id) }}" style="display:inline;" onsubmit="return confirm('¿Eliminar este capítulo?');">
+            <button type="submit" class="btn btn-sm btn-danger">Eliminar</button>
+          </form>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+{% else %}
+  <div class="empty-state">
+    <h3>No hay capítulos</h3>
+    <p>Crea un capítulo para comenzar a organizar tus prácticas</p>
+  </div>
+{% endif %}
+{% endblock %}

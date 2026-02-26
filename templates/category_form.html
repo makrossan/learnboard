@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+{% block title %}{{ 'Editar' if category else 'Nueva' }} Categoría - LearnBoard{% endblock %}
+{% block content %}
+<div class="breadcrumb">
+  <a href="{{ url_for('index') }}">LearnBoard</a> / <a href="{{ url_for('list_categories') }}">Categorías</a> / {{ 'Editar' if category else 'Nueva' }}
+</div>
+
+<header class="page-header">
+  <div class="page-title">
+    <h1>{{ 'Editar' if category else 'Nueva' }} Categoría</h1>
+  </div>
+</header>
+
+<div class="card" style="max-width: 600px;">
+  <form method="POST">
+    <div class="form-group">
+      <label for="name">Nombre *</label>
+      <input type="text" id="name" name="name" class="form-control" value="{{ category.name if category else '' }}" required>
+    </div>
+    <div class="form-group">
+      <label for="description">Descripción</label>
+      <textarea id="description" name="description" class="form-control">{{ category.description if category else '' }}</textarea>
+    </div>
+    <div class="actions-row">
+      <button type="submit" class="btn btn-primary">Guardar</button>
+      <a href="{{ url_for('list_categories') }}" class="btn btn-secondary">Cancelar</a>
+    </div>
+  </form>
+</div>
+{% endblock %}
